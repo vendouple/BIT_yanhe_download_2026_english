@@ -95,3 +95,26 @@ jobs:
           path: |
             dist/*.exe
           if-no-files-found: error
+
+      - name: Identify build revision
+        id: revision
+        shell: bash
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "short_sha=$(git rev-parse --short=12 HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Create draft release with both editions
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: english-build-${{ steps.revision.outputs.sha }}
+          target_commitish: ${{ steps.revision.outputs.sha }}
+          name: English build ${{ steps.revision.outputs.short_sha }}
+          draft: true
+          body: |
+            Automated English build of commit ${{ steps.revision.outputs.sha }}.
+            Review both executables before publishing this draft release.
+          files: |
+            dist/延河课堂下载器-简易版.exe
+            dist/延河课堂下载器-完整版.exe
+          fail_on_unmatched_files: true
+          overwrite_files: true

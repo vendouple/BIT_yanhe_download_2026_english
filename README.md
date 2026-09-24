@@ -6,9 +6,11 @@ Chinese source strings as the fallback for anything not translated yet.
 The GitHub Actions workflow in `.github/workflows/upstream-build.yml` checks
 the upstream repository weekly and on every push. It merges upstream changes,
 adds any new Chinese UI strings to `locales/en.json` without changing existing
-translations, commits the result, and builds both Windows editions as an
-artifact. Fill in blank catalog values when upstream adds new UI text; those
-new strings intentionally remain Chinese until translated.
+translations, commits the result, and builds both Windows editions. Successful
+builds are uploaded as workflow artifacts and attached to a draft release for
+the built commit. Review and publish the draft manually. Fill in blank catalog
+values when upstream adds new UI text; those new strings intentionally remain
+Chinese until translated.
 
 > **End-to-end, zero-dependency, dual-edition release**
 >
@@ -41,8 +43,11 @@ unzip and double-click to run.
 
 ## 📦 Get a release
 
-Download the edition you need from
-[Releases](https://github.com/lankerr/BIT_yanhe_download_2026/releases).
+Download the English edition you need from this fork's
+[Releases](https://github.com/vendouple/BIT_yanhe_download_2026_english/releases).
+Automated builds first appear as draft releases for the repository maintainers;
+they become publicly downloadable only after the draft is published. The same
+executables are available as artifacts in the successful workflow run.
 
 First-time use:
 1. Log in to [Yanhe Classroom](https://www.yanhekt.cn) in your browser → press `F12` to open the console
