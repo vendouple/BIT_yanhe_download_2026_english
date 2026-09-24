@@ -103,6 +103,12 @@ jobs:
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "short_sha=$(git rev-parse --short=12 HEAD)" >> "$GITHUB_OUTPUT"
 
+      - name: Prepare release assets
+        shell: pwsh
+        run: |
+          Copy-Item -LiteralPath 'dist/延河课堂下载器-简易版.exe' -Destination 'dist/yanhe-classroom-downloader-simple.exe' -Force
+          Copy-Item -LiteralPath 'dist/延河课堂下载器-完整版.exe' -Destination 'dist/yanhe-classroom-downloader-full.exe' -Force
+
       - name: Create draft release with both editions
         uses: softprops/action-gh-release@v3
         with:
@@ -114,7 +120,7 @@ jobs:
             Automated English build of commit ${{ steps.revision.outputs.sha }}.
             Review both executables before publishing this draft release.
           files: |
-            dist/延河课堂下载器-简易版.exe
-            dist/延河课堂下载器-完整版.exe
+            dist/yanhe-classroom-downloader-simple.exe
+            dist/yanhe-classroom-downloader-full.exe
           fail_on_unmatched_files: true
           overwrite_files: true
