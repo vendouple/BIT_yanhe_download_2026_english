@@ -26,7 +26,7 @@ hiddenimports = [
     'requests', 'urllib3', 'charset_normalizer', 'idna', 'certifi',
     'tkinter', 'tkinter.ttk', 'tkinter.messagebox', 'tkinter.filedialog',
     'queue', 'threading', 'concurrent.futures',
-    'app_paths', 'utils', 'm3u8dl', 'history',
+    'app_paths', 'utils', 'm3u8dl', 'history', 'theme',
     'ppt_extractor_gpu', 'audio_transcriber_gpu', 'batch_process',
     'cv2', 'numpy', 'imagehash', 'pptx',
     'faster_whisper', 'ctranslate2', 'tokenizers', 'huggingface_hub',
