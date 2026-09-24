@@ -16,6 +16,8 @@ jobs:
     env:
       UPSTREAM_REPOSITORY: lankerr/BIT_yanhe_download_2026
       UPSTREAM_BRANCH: main
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: utf-8
     steps:
       - name: Check out fork
         uses: actions/checkout@v4
