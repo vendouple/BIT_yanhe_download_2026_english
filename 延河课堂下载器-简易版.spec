@@ -9,7 +9,7 @@ import os
 
 block_cipher = None
 
-datas = [('yhkt.ico', '.')]
+datas = [('yhkt.ico', '.'), ('locales/en.json', 'locales')]
 binaries = []
 # 内嵌 ffmpeg / ffprobe（由 fetch_ffmpeg.py 提前准备好）
 for _bin in ('ffmpeg.exe', 'ffprobe.exe'):

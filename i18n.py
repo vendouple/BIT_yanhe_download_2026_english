@@ -6,7 +6,9 @@ import json
 from pathlib import Path
 from typing import Any
 
-_CATALOG = Path(__file__).resolve().parent / "locales" / "en.json"
+from app_paths import resource_path
+
+_CATALOG = Path(resource_path("locales/en.json"))
 _translations: dict[str, str] = {}
 
 

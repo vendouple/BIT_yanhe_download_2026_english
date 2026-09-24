@@ -35,12 +35,12 @@ jobs:
             conflicts="$(git diff --name-only --diff-filter=U)"
             if echo "$conflicts" | grep -qx 'gui_app.py'; then
               git checkout --theirs gui_app.py
-              python -c "from pathlib import Path; p=Path('gui_app.py'); s=p.read_text(encoding='utf-8'); m='import customtkinter as ctk\\n'; p.write_text(s if 'import i18n\\n' in s else s.replace(m, 'import i18n\\n'+m+'i18n.install()\\n', 1), encoding='utf-8')"
+              python -c "from pathlib import Path; p=Path('gui_app.py'); s=p.read_text(encoding='utf-8'); m='import customtkinter as ctk\n'; assert m in s, 'CustomTkinter import not found'; p.write_text(s if 'import i18n\n' in s else s.replace(m, 'import i18n\n'+m+'i18n.install()\n', 1), encoding='utf-8')"
               git add gui_app.py
               conflicts="$(git diff --name-only --diff-filter=U)"
             fi
             if echo "$conflicts" | grep -qx 'README.md'; then
-              git checkout --theirs README.md
+              git checkout --ours README.md
               git add README.md
               conflicts="$(git diff --name-only --diff-filter=U)"
             fi
@@ -66,7 +66,20 @@ jobs:
           git diff --cached --quiet || git commit -m "chore: sync upstream and update translations"
           git push origin HEAD:main
 
-      - name: Prepare FFmpeg
+      - name: Download FFmpeg for Windows build
+        shell: pwsh
+        run: |
+          $archive = Join-Path $env:RUNNER_TEMP 'ffmpeg-release-essentials.zip'
+          $extracted = Join-Path $env:RUNNER_TEMP 'ffmpeg-release-essentials'
+          Invoke-WebRequest -Uri 'https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip' -OutFile $archive
+          Expand-Archive -LiteralPath $archive -DestinationPath $extracted
+          foreach ($name in @('ffmpeg.exe', 'ffprobe.exe')) {
+            $binary = Get-ChildItem -LiteralPath $extracted -Recurse -File -Filter $name | Select-Object -First 1
+            if (-not $binary) { throw "Missing $name in FFmpeg archive" }
+            Copy-Item -LiteralPath $binary.FullName -Destination $name
+          }
+
+      - name: Verify FFmpeg
         run: python fetch_ffmpeg.py
 
       - name: Build simple edition
