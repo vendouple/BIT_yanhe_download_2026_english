@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -12,6 +13,15 @@ from app_paths import resource_path
 
 _CATALOG = Path(resource_path("locales/en.json"))
 _translations: dict[str, str] = {}
+_MISSING_MEDIA_PATTERN = re.compile(r"在 (?P<path>.+) 中未找到媒体文件")
+_DURATION_PATTERN = re.compile(
+    r"(?P<prefix>音频时长: |视频时长: |开始转录 \(|Audio duration: |"
+    r"Video duration: |Starting transcription \()"
+    r"(?P<minutes>\d+)分(?P<seconds>\d+)秒"
+)
+_STATUS_UNIT_PATTERN = re.compile(
+    r"(?P<prefix>成功\(|Success\()(?P<count>\d+)(?P<unit>张|段)(?P<suffix>\))"
+)
 
 
 def _load() -> None:
@@ -21,14 +31,14 @@ def _load() -> None:
         catalogs.extend(sorted(_CATALOG.parent.glob("en_*.json")))
         catalogs.extend(sorted(_CATALOG.parent.glob("*_en.json")))
     merged: dict[str, str] = {}
-    try:
-        for catalog in catalogs:
+    for catalog in catalogs:
+        try:
             with catalog.open(encoding="utf-8") as handle:
                 data = json.load(handle)
             merged.update({str(k): str(v) for k, v in data.items() if v})
-        _translations = merged
-    except (OSError, json.JSONDecodeError, TypeError):
-        _translations = {}
+        except (OSError, json.JSONDecodeError, TypeError):
+            continue
+    _translations = merged
 
 
 def tr(value: Any) -> Any:
@@ -38,7 +48,28 @@ def tr(value: Any) -> Any:
     translated = _translations.get(value, value)
     if translated != value:
         return translated
+    missing_media = _MISSING_MEDIA_PATTERN.fullmatch(value)
+    if missing_media:
+        return f"No media files found in {missing_media.group('path')}"
+    value = _DURATION_PATTERN.sub(
+        lambda match: (
+            f"{match.group('prefix')}{match.group('minutes')} min "
+            f"{match.group('seconds')} sec"
+        ),
+        value,
+    )
+    value = _STATUS_UNIT_PATTERN.sub(
+        lambda match: (
+            f"{match.group('prefix')}{match.group('count')} "
+            f"{'slides' if match.group('unit') == '张' else 'segments'}{match.group('suffix')}"
+        ),
+        value,
+    )
     for source, target in sorted(_translations.items(), key=lambda item: len(item[0]), reverse=True):
+        # Short fragments such as "网络" or "课程" can occur in server error
+        # text and should not corrupt otherwise useful exception details.
+        if len(source.strip()) < 4 and source.strip() == source and all(char.isalnum() for char in source):
+            continue
         if source in value:
             value = value.replace(source, target)
     return value
@@ -48,6 +79,8 @@ def _translate_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     for key in ("text", "placeholder_text", "title", "message"):
         if key in kwargs:
             kwargs[key] = tr(kwargs[key])
+    if "values" in kwargs and isinstance(kwargs["values"], (list, tuple)):
+        kwargs["values"] = type(kwargs["values"])(tr(value) for value in kwargs["values"])
     return kwargs
 
 
@@ -64,6 +97,20 @@ class _TranslatedStream:
 
     def __getattr__(self, name):
         return getattr(self._stream, name)
+
+
+def _install_console_translation() -> None:
+    _install_logging_translation()
+    for stream_name in ("stdout", "stderr"):
+        stream = getattr(sys, stream_name, None)
+        if stream is not None and not getattr(stream, "_i18n_translated_stream", False):
+            setattr(sys, stream_name, _TranslatedStream(stream))
+
+
+def install_console() -> None:
+    """Translate console output and logging without importing GUI dependencies."""
+    _load()
+    _install_console_translation()
 
 
 def _install_logging_translation() -> None:
@@ -87,19 +134,13 @@ def _install_logging_translation() -> None:
 
 def install() -> None:
     """Patch CustomTkinter widgets and Tk dialogs at the shared GUI boundary."""
-    _load()
+    install_console()
     import customtkinter as ctk
     from tkinter import filedialog, messagebox
 
-    _install_logging_translation()
-    for stream_name in ("stdout", "stderr"):
-        stream = getattr(sys, stream_name, None)
-        if stream is not None and not getattr(stream, "_i18n_translated_stream", False):
-            setattr(sys, stream_name, _TranslatedStream(stream))
-
     for class_name in (
         "CTkLabel", "CTkButton", "CTkCheckBox", "CTkRadioButton", "CTkEntry",
-        "CTkOptionMenu", "CTkComboBox",
+        "CTkOptionMenu", "CTkComboBox", "CTkSegmentedButton",
     ):
         cls = getattr(ctk, class_name, None)
         if cls is None or getattr(cls, "_english_localized", False):
@@ -128,7 +169,24 @@ def install() -> None:
         textbox.insert = localized_insert
         textbox._english_localized = True
 
-    for name in ("showerror", "showwarning", "showinfo", "askyesno"):
+    for class_name in ("CTk", "CTkToplevel"):
+        cls = getattr(ctk, class_name, None)
+        if cls is None or getattr(cls, "_english_title_localized", False):
+            continue
+        original_title = cls.title
+
+        def localized_title(self, *args, _original=original_title, **kwargs):
+            if args:
+                args = (tr(args[0]),) + args[1:]
+            return _original(self, *args, **kwargs)
+
+        cls.title = localized_title
+        cls._english_title_localized = True
+
+    for name in (
+        "showerror", "showwarning", "showinfo", "askquestion", "askokcancel",
+        "askretrycancel", "askyesno", "askyesnocancel",
+    ):
         original = getattr(messagebox, name)
         if getattr(original, "_english_localized", False):
             continue

@@ -11,15 +11,13 @@ from PyInstaller.utils.hooks import (
     collect_dynamic_libs,
     collect_submodules,
 )
+import glob
 import os
 
 block_cipher = None
 
-datas = [
-    ('yhkt.ico', '.'),
-    ('locales/en.json', 'locales'),
-    ('locales/en_gui.json', 'locales'),
-]
+datas = [('yhkt.ico', '.')]
+datas += [(path, 'locales') for path in glob.glob(os.path.join('locales', '*.json'))]
 binaries = []
 for _bin in ('ffmpeg.exe', 'ffprobe.exe'):
     if os.path.isfile(_bin):

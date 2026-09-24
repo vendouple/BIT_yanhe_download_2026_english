@@ -12,6 +12,11 @@ import cv2
 import numpy as np
 from pathlib import Path
 from typing import List, Tuple, Optional
+
+import i18n
+
+i18n.install_console()
+
 from tqdm import tqdm
 import imagehash
 from PIL import Image

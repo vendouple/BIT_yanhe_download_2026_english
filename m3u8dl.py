@@ -12,8 +12,11 @@ from concurrent.futures import ThreadPoolExecutor
 import requests
 import urllib3
 
+import i18n
 import utils
 import threading
+
+i18n.install_console()
 
 # ====== Module-level file logger ======
 logger = logging.getLogger("m3u8dl")

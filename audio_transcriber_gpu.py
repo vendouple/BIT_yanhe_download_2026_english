@@ -13,6 +13,10 @@ import time
 from pathlib import Path
 from typing import Optional, Callable, List, Tuple
 
+import i18n
+
+i18n.install_console()
+
 # 设置 HuggingFace 镜像（国内加速）
 if not os.environ.get("HF_ENDPOINT"):
     os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"

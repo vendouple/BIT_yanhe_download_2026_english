@@ -10,6 +10,10 @@ import os
 import shutil
 import sys
 
+import i18n
+
+i18n.install_console()
+
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 TARGETS = ["ffmpeg.exe", "ffprobe.exe"]
 

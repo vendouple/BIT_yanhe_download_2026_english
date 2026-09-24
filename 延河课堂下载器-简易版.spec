@@ -5,15 +5,13 @@
 打包命令： pyinstaller --noconfirm --clean 延河课堂下载器-简易版.spec
 """
 from PyInstaller.utils.hooks import collect_all
+import glob
 import os
 
 block_cipher = None
 
-datas = [
-    ('yhkt.ico', '.'),
-    ('locales/en.json', 'locales'),
-    ('locales/en_gui.json', 'locales'),
-]
+datas = [('yhkt.ico', '.')]
+datas += [(path, 'locales') for path in glob.glob(os.path.join('locales', '*.json'))]
 binaries = []
 # 内嵌 ffmpeg / ffprobe（由 fetch_ffmpeg.py 提前准备好）
 for _bin in ('ffmpeg.exe', 'ffprobe.exe'):

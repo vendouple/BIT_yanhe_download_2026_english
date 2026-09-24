@@ -18,6 +18,10 @@ import argparse
 from pathlib import Path
 from typing import Optional, Callable, List
 
+import i18n
+
+i18n.install_console()
+
 # 强制 stdout/stderr 为 UTF-8 (Windows 后台运行时默认 GBK 会因 emoji 崩溃)
 try:
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')

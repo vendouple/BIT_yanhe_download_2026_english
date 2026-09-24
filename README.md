@@ -5,12 +5,12 @@ Chinese source strings as the fallback for anything not translated yet.
 
 The GitHub Actions workflow in `.github/workflows/upstream-build.yml` checks
 the upstream repository weekly and on every push. It merges upstream changes,
-adds any new Chinese UI strings to `locales/en.json` without changing existing
-translations, commits the result, and builds both Windows editions. Successful
-builds are uploaded as workflow artifacts and attached to a draft release for
-the built commit. Review and publish the draft manually. Fill in blank catalog
-values when upstream adds new UI text; those new strings intentionally remain
-Chinese until translated.
+adds any new Chinese strings to the general, GUI, and backend catalogs without
+changing existing translations, commits the result, and builds both Windows
+editions. Successful builds are uploaded as workflow artifacts and attached to
+a draft release for the built commit. Review and publish the draft manually.
+Fill in blank catalog values when upstream adds new user-visible text; those
+new strings intentionally remain Chinese until translated.
 
 > **End-to-end, zero-dependency, dual-edition release**
 >
@@ -160,6 +160,9 @@ Outputs: `dist\延河课堂下载器-简易版.exe` / `dist\延河课堂下载�
 ├── gui_app.py                 # Main GUI (CustomTkinter)
 ├── i18n.py                    # Runtime English localization layer
 ├── locales/en.json            # English translation catalog
+├── locales/en_gui.json        # Complete GUI and log translation catalog
+├── locales/en_backend.json    # Backend console/log translation catalog
+├── theme.py                   # Shared GUI color palette
 ├── m3u8dl.py                  # Fixed-concurrency download engine + HLS merging
 ├── utils.py                   # Signing / course list / authentication
 ├── ppt_extractor_gpu.py       # Courseware extraction (Full edition)
@@ -167,6 +170,7 @@ Outputs: `dist\延河课堂下载器-简易版.exe` / `dist\延河课堂下载�
 ├── batch_process.py           # Post-processing batch orchestration
 ├── fetch_ffmpeg.py            # Pre-packaging ffmpeg preparation
 ├── scripts/update_translations.py  # Translation catalog updater
+├── scripts/check_translations.py   # GUI/backend translation coverage check
 ├── .github/workflows/upstream-build.yml  # Weekly upstream sync + build
 ├── 延河课堂下载器-简易版.spec
 ├── 延河课堂下载器-完整版.spec

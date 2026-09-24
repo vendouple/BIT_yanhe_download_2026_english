@@ -10,6 +10,10 @@ from hashlib import md5
 import requests
 from urllib3.util.connection import HAS_IPV6  # noqa: F401  (only to import urllib3)
 
+import i18n
+
+i18n.install_console()
+
 
 def get_app_path():
     """获取应用程序所在目录（支持打包后的 exe）"""
