@@ -1,0 +1,82 @@
+name: Sync upstream and build
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1"
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  sync-and-build:
+    runs-on: windows-latest
+    env:
+      UPSTREAM_REPOSITORY: lankerr/BIT_yanhe_download_2026
+      UPSTREAM_BRANCH: main
+    steps:
+      - name: Check out fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync from upstream
+        shell: bash
+        run: |
+          git remote add upstream "https://github.com/${UPSTREAM_REPOSITORY}.git" 2>/dev/null || true
+          git fetch upstream "${UPSTREAM_BRANCH}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git merge --no-edit "upstream/${UPSTREAM_BRANCH}"; then
+            conflicts="$(git diff --name-only --diff-filter=U)"
+            if echo "$conflicts" | grep -qx 'gui_app.py'; then
+              git checkout --theirs gui_app.py
+              python -c "from pathlib import Path; p=Path('gui_app.py'); s=p.read_text(encoding='utf-8'); m='import customtkinter as ctk\\n'; p.write_text(s if 'import i18n\\n' in s else s.replace(m, 'import i18n\\n'+m+'i18n.install()\\n', 1), encoding='utf-8')"
+              git add gui_app.py
+              conflicts="$(git diff --name-only --diff-filter=U)"
+            fi
+            if echo "$conflicts" | grep -qx 'README.md'; then
+              git checkout --theirs README.md
+              git add README.md
+              conflicts="$(git diff --name-only --diff-filter=U)"
+            fi
+            test -z "$conflicts" || { echo "Unresolved upstream conflicts: $conflicts"; exit 1; }
+            git commit --no-edit
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt pyinstaller
+
+      - name: Refresh translation catalog
+        run: python scripts/update_translations.py
+
+      - name: Commit upstream and catalog updates
+        shell: bash
+        run: |
+          git add -A
+          git diff --cached --quiet || git commit -m "chore: sync upstream and update translations"
+          git push origin HEAD:main
+
+      - name: Prepare FFmpeg
+        run: python fetch_ffmpeg.py
+
+      - name: Build simple edition
+        run: python -m PyInstaller --noconfirm --clean "延河课堂下载器-简易版.spec"
+
+      - name: Build full edition
+        run: python -m PyInstaller --noconfirm --clean "延河课堂下载器-完整版.spec"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: yanhe-classroom-downloader-windows
+          path: |
+            dist/*.exe
+          if-no-files-found: error

@@ -7,7 +7,9 @@
 简易版隐藏后处理工具入口，并按需懒加载 PPT/Whisper 模块。
 """
 
+import i18n
 import customtkinter as ctk
+i18n.install()
 import tkinter as tk
 from tkinter import messagebox, ttk, filedialog
 import threading
@@ -755,7 +757,7 @@ class LoginFrame(ctk.CTkFrame):
 
         # 给一个进度对话框
         dlg = ctk.CTkToplevel(self)
-        dlg.title("浏览器登录")
+        dlg.title(i18n.tr("浏览器登录"))
         dlg.geometry("520x300")
         dlg.transient(self.winfo_toplevel())
         dlg.grab_set()
@@ -865,7 +867,7 @@ class LoginFrame(ctk.CTkFrame):
     def _open_network_dialog(self):
         """简易的网络模式选择对话框。"""
         win = ctk.CTkToplevel(self)
-        win.title("网络设置")
+        win.title(i18n.tr("网络设置"))
         win.geometry("520x420")
         win.transient(self.winfo_toplevel())
         win.grab_set()
@@ -1987,7 +1989,7 @@ class YanheDownloaderApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         
-        self.title(f"延河课堂下载器 - {edition_label()}")
+        self.title(i18n.tr(f"延河课堂下载器 - {edition_label()}"))
         self.geometry("900x700")
         self.minsize(800, 600)
         
