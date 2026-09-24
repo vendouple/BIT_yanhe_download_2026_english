@@ -7,7 +7,10 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE_FILES = [ROOT / "gui_app.py", ROOT / "app_paths.py"]
+SOURCE_FILES = sorted(
+    path for path in ROOT.glob("*.py")
+    if path.name not in {"i18n.py", "theme.py"}
+)
 CATALOG = ROOT / "locales" / "en.json"
 
 

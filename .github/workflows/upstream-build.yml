@@ -59,6 +59,9 @@ jobs:
       - name: Refresh translation catalog
         run: python scripts/update_translations.py
 
+      - name: Check English GUI coverage
+        run: python scripts/check_translations.py
+
       - name: Check GUI imports before packaging
         run: python -c "import gui_app, theme"
 

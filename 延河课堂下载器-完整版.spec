@@ -15,7 +15,11 @@ import os
 
 block_cipher = None
 
-datas = [('yhkt.ico', '.'), ('locales/en.json', 'locales')]
+datas = [
+    ('yhkt.ico', '.'),
+    ('locales/en.json', 'locales'),
+    ('locales/en_gui.json', 'locales'),
+]
 binaries = []
 for _bin in ('ffmpeg.exe', 'ffprobe.exe'):
     if os.path.isfile(_bin):
